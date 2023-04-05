@@ -491,7 +491,7 @@ impl MSGraph {
 
                 // add app to team
                 let body = json!({
-                        "teamsApp@odata.bind": "https://graph.microsoft.com/v1.0/appCatalogs/teamsApps/com.microsoft.teamspace.tab.planner"
+                        "teamsApp@odata.bind":"https://graph.microsoft.com/v1.0/appCatalogs/teamsApps/com.microsoft.teamspace.tab.planner"
                 });
                 let url = format!("https://graph.microsoft.com/beta/teams/{}/installedApps", team.id);
 
@@ -514,8 +514,8 @@ impl MSGraph {
 
                 // add tab to channel
 		let entity_id = format!("tt.c_{}_p_{}", channel.id.clone().unwrap(), plan.id);
-		let content_url = format!("https://tasks.teams.microsoft.com/teamsui/{{tid}}/Home/PlannerFrame?page=7&auth_pvr=OrgId&auth_upn={{userPrincipalName}}&groupId={{groupId}}&planId=@{}&channelId={{channelId}}&entityId={{entityId}}&tid={{tid}}&userObjectId={{userObjectId}}&subEntityId={{subEntityId}}&sessionId={{sessionId}}&theme={{theme}}&mkt={{locale}}&ringId={{ringId}}&PlannerRouteHint={{tid}}", &plan.id);
-		let remove_url = format!("https://tasks.teams.microsoft.com/teamsui/{{tid}}/Home/PlannerFrame?page=13&auth_pvr=OrgId&auth_upn={{userPrincipalName}}&groupId={{groupId}}&planId=@{}&channelId={{channelId}}&entityId={{entityId}}&tid={{tid}}&userObjectId={{userObjectId}}&subEntityId={{subEntityId}}&sessionId={{sessionId}}&theme={{theme}}&mkt={{locale}}&ringId={{ringId}}&PlannerRouteHint={{tid}}", &plan.id);
+		let content_url = format!("https://tasks.teams.microsoft.com/teamsui/{{tid}}/Home/PlannerFrame?page=7&auth_pvr=OrgId&auth_upn={{userPrincipalName}}&groupId={{groupId}}&planId={}&channelId={{channelId}}&entityId={{entityId}}&tid={{tid}}&userObjectId={{userObjectId}}&subEntityId={{subEntityId}}&sessionId={{sessionId}}&theme={{theme}}&mkt={{locale}}&ringId={{ringId}}&PlannerRouteHint={{tid}}&tabVersion=20200228.1_s", &plan.id);
+		let remove_url = format!("https://tasks.teams.microsoft.com/teamsui/{{tid}}/Home/PlannerFrame?page=13&auth_pvr=OrgId&auth_upn={{userPrincipalName}}&groupId={{groupId}}&planId={}&channelId={{channelId}}&entityId={{entityId}}&tid={{tid}}&userObjectId={{userObjectId}}&subEntityId={{subEntityId}}&sessionId={{sessionId}}&theme={{theme}}&mkt={{locale}}&ringId={{ringId}}&PlannerRouteHint={{tid}}&tabVersion=20200228.1_s", &plan.id);
 		let web_url = format!("https://tasks.office.com/{{tid}}/Home/PlanViews/@{}?Type=PlanLink&Channel=TeamsTab", &plan.id);
 		let body = json!({
 				"displayName": tab_name,
