@@ -140,9 +140,9 @@ pub enum PlanTemplateType {
 
 impl PlanTemplateType {
         pub fn from_str(s: &str) -> PlanTemplateType {
-                match s {
-                        "Default" => PlanTemplateType::Default,
-                        "Project" => PlanTemplateType::Project,
+                match s.to_lowercase().as_str() {
+                        "default" => PlanTemplateType::Default,
+                        "project" => PlanTemplateType::Project,
                         _ => PlanTemplateType::Default,
                 }
         }
