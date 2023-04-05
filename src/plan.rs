@@ -1,4 +1,6 @@
 use serde::{Deserialize, Serialize};
+use std::collections::HashMap;
+use rocket::FromForm;
 
 /*
 {
@@ -107,3 +109,66 @@ pub struct CreationSource {
 	#[serde(rename = "@odata.type")]
 	odata_type: Option<String>,
 }
+
+
+#[derive(FromForm, Debug, Clone, Serialize, Deserialize)]
+pub struct CreatePlanForm {
+	pub plan_name: String,
+	pub plan_template: String,
+}
+
+impl CreatePlanForm {
+        pub fn to_create_plan(&self) -> CreatePlan {
+                CreatePlan {
+                        plan_name: self.plan_name.clone(),
+                        plan_template: PlanTemplateType::from_str(&self.plan_template),
+                }
+        }
+}
+
+#[derive(Debug, Clone, Serialize, Deserialize)]
+pub struct CreatePlan {
+        pub plan_name: String,
+        pub plan_template: PlanTemplateType,
+}
+
+#[derive(Debug, Clone, Serialize, Deserialize, PartialEq)]
+pub enum PlanTemplateType {
+        Default,
+        Project,
+}
+
+impl PlanTemplateType {
+        pub fn from_str(s: &str) -> PlanTemplateType {
+                match s {
+                        "Default" => PlanTemplateType::Default,
+                        "Project" => PlanTemplateType::Project,
+                        _ => PlanTemplateType::Default,
+                }
+        }
+}
+
+pub struct PlanTemplateSpec {
+        pub buckets: HashMap<String, Vec<String>>,
+}
+
+impl PlanTemplateType {
+        pub fn to_spec(&self) -> PlanTemplateSpec {
+                match self {
+                        PlanTemplateType::Default => PlanTemplateSpec {
+                                buckets: HashMap::new(),
+                        },
+                        PlanTemplateType::Project => {
+                                let mut buckets = HashMap::new();
+                                buckets.insert("Tech Work".to_owned(), Vec::new());
+                                buckets.insert("Design Work".to_owned(), Vec::new());
+                                buckets.insert("Install Work".to_owned(), Vec::new());
+                                PlanTemplateSpec {
+                                        buckets
+                                }
+                        },
+                }
+        }
+}
+
+

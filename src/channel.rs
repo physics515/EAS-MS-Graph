@@ -1,6 +1,7 @@
 use serde::{Deserialize, Serialize};
 use rocket::{response::Responder, FromForm};
 use crate::Team;
+use crate::plan::CreatePlanForm;
 
 ///
 /// Graph API channel object.
@@ -85,14 +86,10 @@ pub struct CreateSharedChannelForm {
 	pub channel_description: String,
 	pub owner_id: String,
 	pub member_id: String,
-	pub plan: Option<PlanTemplate>,
+	pub plan: Option<CreatePlanForm>,
 }
 
-#[derive(FromForm, Debug, Clone, Serialize, Deserialize)]
-pub struct PlanTemplate {
-	pub plan_name: String,
-	pub plan_template: String,
-}
+
 
 ///
 /// The response from creating a shared channel

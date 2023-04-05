@@ -155,37 +155,29 @@ impl MSGraph {
 
 				match &data.plan {
 					Some(plan) => {
+                                                let plan = plan.to_create_plan();
 						let created_plan = self.automation_create_plan(plan.plan_name.clone(), team.display_name.clone().unwrap().clone()).await;
 						let created_plan = match created_plan {
 							Ok(created_plan) => created_plan,
 							Err(err) => return Err(format!("Error creating plan: {err}")),
 						};
 
-						if plan.plan_template.as_str() == "default" {
-							let res = self.automation_add_bucket_to_plan(plan.plan_name.clone(), team.display_name.clone().unwrap().clone(), "Tech Work".to_string()).await;
-							match res {
-								Ok(_) => (),
-								Err(err) => return Err(format!("Error adding bucket to plan: {err}")),
-							}
+                                                let spec = plan.plan_template.to_spec();
 
-							let res = self.automation_add_bucket_to_plan(plan.plan_name.clone(), team.display_name.clone().unwrap().clone(), "Design Work".to_string()).await;
-							match res {
-								Ok(_) => (),
-								Err(err) => return Err(format!("Error adding bucket to plan: {err}")),
-							}
+                                                for (bucket_name, _) in spec.buckets {
+                                                        let res = self.automation_add_bucket_to_plan(created_plan.title.clone().unwrap_or(plan.plan_name.clone()).clone(), team.display_name.clone().unwrap().clone(), bucket_name.clone()).await;
+                                                        match res {
+                                                                Ok(_) => (),
+                                                                Err(err) => return Err(format!("Error adding bucket to plan: {err}")),
+                                                        }
+                                                }
 
-							let res = self.automation_add_bucket_to_plan(plan.plan_name.clone(), team.display_name.clone().unwrap().clone(), "Install Work".to_string()).await;
-							match res {
-								Ok(_) => (),
-								Err(err) => return Err(format!("Error adding bucket to plan: {err}")),
-							}
-
-							let res = self.automation_add_plan_tab_to_teams_channel(&format!("{} Tasks", &channel.display_name.clone().unwrap()), team.clone(), channel.clone(), created_plan).await;
-							match res {
-								Ok(_) => (),
-								Err(err) => return Err(format!("Error adding plan tab to channel: {err}")),
-							}
+						let res = self.automation_add_plan_tab_to_teams_channel(&format!("{} Tasks", &channel.display_name.clone().unwrap()), team.clone(), channel.clone(), created_plan).await;
+						match res {
+							Ok(_) => (),
+							Err(err) => return Err(format!("Error adding plan tab to channel: {err}")),
 						}
+						
 					}
 					None => (),
 				}
