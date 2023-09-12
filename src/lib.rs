@@ -1,4 +1,4 @@
-use eggersmann_app_server_auth::User;
+pub use eggersmann_app_server_auth::User;
 use azure_identity::ImdsManagedIdentityCredential;
 use azure_security_keyvault::KeyvaultClient;
 use rocket::form::Form;
@@ -56,7 +56,7 @@ impl MSGraph {
 		};
 
 		let client = reqwest::Client::new();
-		let scopes = vec!["https://graph.microsoft.com/.default".to_string()].join(" ").to_string();
+		let scopes = ["https://graph.microsoft.com/.default".to_string()].join(" ").to_string();
 		let mut params = HashMap::new();
 		params.insert("client_id", client_id.as_str());
 		params.insert("client_secret", client_secret.as_str());

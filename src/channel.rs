@@ -1,3 +1,5 @@
+#![allow(renamed_and_removed_lints)]
+
 use serde::{Deserialize, Serialize};
 use rocket::{response::Responder, FromForm};
 use crate::Team;

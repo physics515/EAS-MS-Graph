@@ -1,5 +1,7 @@
+#![allow(renamed_and_removed_lints)]
+
 use serde::{Deserialize, Serialize};
-use std::collections::HashMap;
+use std::{collections::HashMap, str::FromStr};
 use rocket::FromForm;
 
 /*
@@ -121,7 +123,10 @@ impl CreatePlanForm {
         pub fn to_create_plan(&self) -> CreatePlan {
                 CreatePlan {
                         plan_name: self.plan_name.clone(),
-                        plan_template: PlanTemplateType::from_str(&self.plan_template),
+                        plan_template: match PlanTemplateType::from_str(&self.plan_template) {
+                                Ok(t) => t,
+                                Err(_) => PlanTemplateType::Default
+                        },
                 }
         }
 }
@@ -138,12 +143,14 @@ pub enum PlanTemplateType {
         Project,
 }
 
-impl PlanTemplateType {
-        pub fn from_str(s: &str) -> PlanTemplateType {
+impl FromStr for PlanTemplateType {
+        type Err = ();
+
+        fn from_str(s: &str) -> Result<Self, Self::Err> {
                 match s.to_lowercase().as_str() {
-                        "default" => PlanTemplateType::Default,
-                        "project" => PlanTemplateType::Project,
-                        _ => PlanTemplateType::Default,
+                        "default" => Ok(PlanTemplateType::Default),
+                        "project" => Ok(PlanTemplateType::Project),
+                        _ => Ok(PlanTemplateType::Default),
                 }
         }
 }
