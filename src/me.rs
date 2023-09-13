@@ -1,5 +1,5 @@
-use serde::{Deserialize, Serialize};
 use rocket::http::Status;
+use serde::{Deserialize, Serialize};
 
 /* {
 	"@odata.context": "https://graph.microsoft.com/v1.0/$metadata#users/$entity",

@@ -1,8 +1,9 @@
 #![allow(renamed_and_removed_lints)]
 
-use serde::{Deserialize, Serialize};
 use std::{collections::HashMap, str::FromStr};
+
 use rocket::FromForm;
+use serde::{Deserialize, Serialize};
 
 /*
 {
@@ -112,7 +113,6 @@ pub struct CreationSource {
 	odata_type: Option<String>,
 }
 
-
 #[derive(FromForm, Debug, Clone, Serialize, Deserialize)]
 pub struct CreatePlanForm {
 	pub plan_name: String,
@@ -120,62 +120,56 @@ pub struct CreatePlanForm {
 }
 
 impl CreatePlanForm {
-        pub fn to_create_plan(&self) -> CreatePlan {
-                CreatePlan {
-                        plan_name: self.plan_name.clone(),
-                        plan_template: match PlanTemplateType::from_str(&self.plan_template) {
-                                Ok(t) => t,
-                                Err(_) => PlanTemplateType::Default
-                        },
-                }
-        }
+	pub fn to_create_plan(&self) -> CreatePlan {
+		CreatePlan {
+			plan_name: self.plan_name.clone(),
+			plan_template: match PlanTemplateType::from_str(&self.plan_template) {
+				Ok(t) => t,
+				Err(_) => PlanTemplateType::Default,
+			},
+		}
+	}
 }
 
 #[derive(Debug, Clone, Serialize, Deserialize)]
 pub struct CreatePlan {
-        pub plan_name: String,
-        pub plan_template: PlanTemplateType,
+	pub plan_name: String,
+	pub plan_template: PlanTemplateType,
 }
 
 #[derive(Debug, Clone, Serialize, Deserialize, PartialEq)]
 pub enum PlanTemplateType {
-        Default,
-        Project,
+	Default,
+	Project,
 }
 
 impl FromStr for PlanTemplateType {
-        type Err = ();
+	type Err = ();
 
-        fn from_str(s: &str) -> Result<Self, Self::Err> {
-                match s.to_lowercase().as_str() {
-                        "default" => Ok(PlanTemplateType::Default),
-                        "project" => Ok(PlanTemplateType::Project),
-                        _ => Ok(PlanTemplateType::Default),
-                }
-        }
+	fn from_str(s: &str) -> Result<Self, Self::Err> {
+		match s.to_lowercase().as_str() {
+			"default" => Ok(PlanTemplateType::Default),
+			"project" => Ok(PlanTemplateType::Project),
+			_ => Ok(PlanTemplateType::Default),
+		}
+	}
 }
 
 pub struct PlanTemplateSpec {
-        pub buckets: HashMap<String, Vec<String>>,
+	pub buckets: HashMap<String, Vec<String>>,
 }
 
 impl PlanTemplateType {
-        pub fn to_spec(&self) -> PlanTemplateSpec {
-                match self {
-                        PlanTemplateType::Default => PlanTemplateSpec {
-                                buckets: HashMap::new(),
-                        },
-                        PlanTemplateType::Project => {
-                                let mut buckets = HashMap::new();
-                                buckets.insert("Tech Work".to_owned(), Vec::new());
-                                buckets.insert("Design Work".to_owned(), Vec::new());
-                                buckets.insert("Install Work".to_owned(), Vec::new());
-                                PlanTemplateSpec {
-                                        buckets
-                                }
-                        },
-                }
-        }
+	pub fn to_spec(&self) -> PlanTemplateSpec {
+		match self {
+			PlanTemplateType::Default => PlanTemplateSpec { buckets: HashMap::new() },
+			PlanTemplateType::Project => {
+				let mut buckets = HashMap::new();
+				buckets.insert("Tech Work".to_owned(), Vec::new());
+				buckets.insert("Design Work".to_owned(), Vec::new());
+				buckets.insert("Install Work".to_owned(), Vec::new());
+				PlanTemplateSpec { buckets }
+			}
+		}
+	}
 }
-
-

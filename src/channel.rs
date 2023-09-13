@@ -1,9 +1,10 @@
 #![allow(renamed_and_removed_lints)]
 
-use serde::{Deserialize, Serialize};
 use rocket::{response::Responder, FromForm};
-use crate::Team;
+use serde::{Deserialize, Serialize};
+
 use crate::plan::CreatePlanForm;
+use crate::Team;
 
 ///
 /// Graph API channel object.
@@ -75,9 +76,6 @@ pub struct ChannelCollection {
 	pub value: Vec<Channel>,
 }
 
-
-
-
 ///
 /// The input form for creating a shared channel
 ///
@@ -90,8 +88,6 @@ pub struct CreateSharedChannelForm {
 	pub member_id: String,
 	pub plan: Option<CreatePlanForm>,
 }
-
-
 
 ///
 /// The response from creating a shared channel

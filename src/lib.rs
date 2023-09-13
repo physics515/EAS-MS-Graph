@@ -1,28 +1,27 @@
-pub use eggersmann_app_server_auth::User;
-use azure_identity::ImdsManagedIdentityCredential;
-use azure_security_keyvault::KeyvaultClient;
-use rocket::form::Form;
-use serde_json::json;
-use serde_json::Value;
 use std::collections::HashMap;
 use std::sync::Arc;
-use eggersmann_app_server_auth::MSAccessToken;
 
-pub use me::*;
+use azure_identity::ImdsManagedIdentityCredential;
+use azure_security_keyvault::KeyvaultClient;
 pub use channel::*;
 pub use drive::*;
+use eggersmann_app_server_auth::MSAccessToken;
+pub use eggersmann_app_server_auth::User;
 pub use group::*;
+pub use me::*;
 pub use plan::*;
-pub use team::*;
+use rocket::form::Form;
+use serde_json::json;
 pub use site::*;
+pub use team::*;
 
-mod me;
 mod channel;
 mod drive;
 mod group;
+mod me;
 mod plan;
-mod team;
 mod site;
+mod team;
 
 pub struct MSGraph {
 	token: MSAccessToken,
@@ -127,12 +126,10 @@ impl MSGraph {
 
 		let body = json!(CreateChannelBody { display_name: data.channel_display_name.clone(), description: data.channel_description.clone(), membership_type: "shared".to_string(), members });
 		let uri = format!("https://graph.microsoft.com/v1.0/teams/{}/channels", team.id.clone());
-		println!("uri: {}, Creating channel: {}", uri.clone(), body.clone());
 		let res = client.post(uri).json(&body).bearer_auth(&self.token.access_token).send().await;
 
 		match res {
 			Ok(_) => {
-				//println!("Created channel: {}", res.json::<Value>().await.unwrap().to_string());
 				let team = match self.automation_team_by_name(data.team_name.clone()).await {
 					Ok(team) => team,
 					Err(err) => return Err(format!("Error getting team: {err}")),
@@ -155,29 +152,28 @@ impl MSGraph {
 
 				match &data.plan {
 					Some(plan) => {
-                                                let plan = plan.to_create_plan();
+						let plan = plan.to_create_plan();
 						let created_plan = self.automation_create_plan(plan.plan_name.clone(), team.display_name.clone().unwrap().clone()).await;
 						let created_plan = match created_plan {
 							Ok(created_plan) => created_plan,
 							Err(err) => return Err(format!("Error creating plan: {err}")),
 						};
 
-                                                let spec = plan.plan_template.to_spec();
+						let spec = plan.plan_template.to_spec();
 
-                                                for (bucket_name, _) in spec.buckets {
-                                                        let res = self.automation_add_bucket_to_plan(created_plan.title.clone().unwrap_or(plan.plan_name.clone()).clone(), team.display_name.clone().unwrap().clone(), bucket_name.clone()).await;
-                                                        match res {
-                                                                Ok(_) => (),
-                                                                Err(err) => return Err(format!("Error adding bucket to plan: {err}")),
-                                                        }
-                                                }
+						for (bucket_name, _) in spec.buckets {
+							let res = self.automation_add_bucket_to_plan(created_plan.title.clone().unwrap_or(plan.plan_name.clone()).clone(), team.display_name.clone().unwrap().clone(), bucket_name.clone()).await;
+							match res {
+								Ok(_) => (),
+								Err(err) => return Err(format!("Error adding bucket to plan: {err}")),
+							}
+						}
 
 						let res = self.automation_add_plan_tab_to_teams_channel(&format!("{} Tasks", &channel.display_name.clone().unwrap()), team.clone(), channel.clone(), created_plan).await;
 						match res {
 							Ok(_) => (),
 							Err(err) => return Err(format!("Error adding plan tab to channel: {err}")),
 						}
-						
 					}
 					None => (),
 				}
@@ -206,14 +202,10 @@ impl MSGraph {
 		});
 
 		let uri = format!("https://graph.microsoft.com/v1.0/teams/{}/channels/{}/members", team.id.clone(), channel.id.unwrap());
-		println!("uri: {}, Adding owner: {}", uri.clone(), body.clone());
 		let res = client.post(uri).json(&body).bearer_auth(&self.token.access_token).send().await;
 
 		match res {
-			Ok(res) => {
-				println!("Added owner: {}", res.json::<Value>().await.unwrap());
-				Ok(())
-			}
+			Ok(_) => Ok(()),
 			Err(err) => Err(format!("Error adding owner: {err}")),
 		}
 	}
@@ -225,10 +217,7 @@ impl MSGraph {
 		match res {
 			Ok(res) => {
 				let body = match res.text().await {
-					Ok(body) => {
-						println!("Channels Body: {body}");
-						body
-					}
+					Ok(body) => body,
 					Err(err) => return Err(format!("Error Decoding Body: {err}")),
 				};
 				let json = serde_json::from_str::<ChannelCollection>(&body);
@@ -413,15 +402,11 @@ impl MSGraph {
 			"title": plan_name,
 		});
 
-		println!("{}", body);
-
 		let res = client.post("https://graph.microsoft.com/beta/planner/plans").json(&body).bearer_auth(&self.token.access_token);
-		println!("create plan request: {:?}", res);
 
 		match res.send().await {
 			Ok(res) => {
 				let json = res.json::<serde_json::Value>().await.unwrap();
-				println!("create plan response json: {}", json);
 				let plan: Plan = match serde_json::from_value(json) {
 					Ok(plan) => plan,
 					Err(err) => return Err(err.to_string()),
@@ -466,16 +451,11 @@ impl MSGraph {
 				"orderHint": " !",
 		});
 
-		println!("Add Bucket Body: {}", body);
-
 		let res = client.post("https://graph.microsoft.com/beta/planner/buckets").json(&body).bearer_auth(&self.token.access_token);
-
-		println!("Add Bucket Request: {:?}", res);
 
 		match res.send().await {
 			Ok(res) => {
 				let json = res.json::<serde_json::Value>().await.unwrap();
-				println!("Add Bucket Response: {}", json);
 				let bucket: Bucket = match serde_json::from_value(json) {
 					Ok(bucket) => bucket,
 					Err(err) => return Err(err.to_string()),
@@ -489,30 +469,25 @@ impl MSGraph {
 	pub async fn automation_add_plan_tab_to_teams_channel(&self, tab_name: &str, team: Team, channel: Channel, plan: Plan) -> Result<TeamsTab, String> {
 		let client = reqwest::Client::new();
 
-                // add app to team
-                let body = json!({
-                        "teamsApp@odata.bind":"https://graph.microsoft.com/v1.0/appCatalogs/teamsApps/com.microsoft.teamspace.tab.planner"
-                });
-                let url = format!("https://graph.microsoft.com/beta/teams/{}/installedApps", team.id);
+		// add app to team
+		let body = json!({
+				"teamsApp@odata.bind":"https://graph.microsoft.com/v1.0/appCatalogs/teamsApps/com.microsoft.teamspace.tab.planner"
+		});
+		let url = format!("https://graph.microsoft.com/beta/teams/{}/installedApps", team.id);
 
-                println!("add app to team url: {}", url);
-                println!("add app to team body: {}", body);
+		let res = client.post(url).json(&body).bearer_auth(&self.token.access_token).send().await;
+		match res {
+			Ok(res) => {
+				let json = res.json::<serde_json::Value>().await;
+				match json {
+					Ok(_) => (),
+					Err(err) => return Err(err.to_string()),
+				}
+			}
+			Err(err) => return Err(err.to_string()),
+		}
 
-                let res = client.post(url).json(&body).bearer_auth(&self.token.access_token).send().await;
-                match res {
-                        Ok(res) => {
-                                let json = res.json::<serde_json::Value>().await;
-                                match json {
-                                        Ok(json) => println!("add app to team response: {}", json),
-                                        Err(err) => return Err(err.to_string()),
-                                }
-                        }
-                        Err(err) => return Err(err.to_string()),
-                }
-
-
-
-                // add tab to channel
+		// add tab to channel
 		let entity_id = format!("tt.c_{}_p_{}", channel.id.clone().unwrap(), plan.id);
 		let content_url = format!("https://tasks.teams.microsoft.com/teamsui/{{tid}}/Home/PlannerFrame?page=7&auth_pvr=OrgId&auth_upn={{userPrincipalName}}&groupId={{groupId}}&planId={}&channelId={{channelId}}&entityId={{entityId}}&tid={{tid}}&userObjectId={{userObjectId}}&subEntityId={{subEntityId}}&sessionId={{sessionId}}&theme={{theme}}&mkt={{locale}}&ringId={{ringId}}&PlannerRouteHint={{tid}}&tabVersion=20200228.1_s", &plan.id);
 		let remove_url = format!("https://tasks.teams.microsoft.com/teamsui/{{tid}}/Home/PlannerFrame?page=13&auth_pvr=OrgId&auth_upn={{userPrincipalName}}&groupId={{groupId}}&planId={}&channelId={{channelId}}&entityId={{entityId}}&tid={{tid}}&userObjectId={{userObjectId}}&subEntityId={{subEntityId}}&sessionId={{sessionId}}&theme={{theme}}&mkt={{locale}}&ringId={{ringId}}&PlannerRouteHint={{tid}}&tabVersion=20200228.1_s", &plan.id);
@@ -527,28 +502,19 @@ impl MSGraph {
 					"websiteUrl": web_url,
 				}
 		});
-                let url = format!("https://graph.microsoft.com/v1.0/teams/{}/channels/{}/tabs", team.id, channel.id.unwrap());
-
-                println!("Add Tab URL: {}", url);
-
-		println!("Add Tab Body: {}", body);
-
+		let url = format!("https://graph.microsoft.com/v1.0/teams/{}/channels/{}/tabs", team.id, channel.id.unwrap());
 		let res = client.post(url).json(&body).bearer_auth(&self.token.access_token).send().await;
 
 		match res {
 			Ok(res) => {
-                                let res = res.json::<serde_json::Value>().await.unwrap();
-                                println!("Add Tab Response: {}", res);
-                                let res = serde_json::from_value::<TeamsTab>(res);
-                                match  res {
-        				Ok(tab) => {
-        					Ok(tab)
-        				}
-        				Err(err) => Err(err.to_string()),
-        			}
-                        },
+				let res = res.json::<serde_json::Value>().await.unwrap();
+				let res = serde_json::from_value::<TeamsTab>(res);
+				match res {
+					Ok(tab) => Ok(tab),
+					Err(err) => Err(err.to_string()),
+				}
+			}
 			Err(err) => Err(err.to_string()),
 		}
 	}
 }
-
