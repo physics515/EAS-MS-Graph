@@ -12,4 +12,4 @@ reqwest = { version = "*", features = ["cookies", "blocking", "json", "rustls-tl
 eggersmann_app_server_auth = {git = "https://github.com/physics515/egg-server-auth"}
 azure_security_keyvault = "*"
 azure_identity = "*"
-rocket = { git = "https://github.com/SergioBenitez/Rocket", rev = "91f6288", features=['json'] }
+rocket = { version = "*", features=['json'] }
