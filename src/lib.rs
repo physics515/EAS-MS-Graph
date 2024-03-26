@@ -46,17 +46,19 @@ impl MSGraph {
 			Ok(client_id) => client_id.value,
 			Err(e) => return Err(e.to_string()),
 		};
-
+                dbg!("MSGraph::new: 3");
 		let client_secret = match azure_key_vault_client.get(client_secret_key).await {
 			Ok(client_secret) => client_secret.value,
 			Err(e) => return Err(e.to_string()),
 		};
 
+                dbg!("MSGraph::new: 4");
 		let tenant_id = match azure_key_vault_client.get(tenant_id_key).await {
 			Ok(tenant_id) => tenant_id.value,
 			Err(e) => return Err(e.to_string()),
 		};
 
+                dbg!("MSGraph::new: 5");
 		let client = reqwest::Client::new();
 		let scopes = ["https://graph.microsoft.com/.default".to_string()].join(" ").to_string();
 		let mut params = HashMap::new();
@@ -65,6 +67,7 @@ impl MSGraph {
 		params.insert("grant_type", "client_credentials");
 		params.insert("scope", &scopes);
 
+                dbg!("MSGraph::new: 6");
 		let res = client.post(format!("https://login.microsoftonline.com/{tenant_id}/oauth2/v2.0/token")).form(&params).send().await;
 		match res {
 			Ok(res) => {
