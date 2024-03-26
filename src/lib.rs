@@ -35,9 +35,12 @@ impl MSGraph {
 	/// tenant_id_key: The name of the secret that contains the tenant ID. (e.g. "ms-auth-tenant-id")
 	///
 	pub async fn new(key_vault_name: &str, client_id_key: &str, client_secret_key: &str, tenant_id_key: &str) -> Result<Self, String> {
+                dbg!("MSGraph::new(key_vault_name: {}, client_id_key: {}, client_secret_key: {}, tenant_id_key: {})", key_vault_name, client_id_key, client_secret_key, tenant_id_key);
 		let azure_credentials = ImdsManagedIdentityCredential::default();
+                dbg!("MSGraph::new: 1");
 		let azure_key_vault_client = KeyvaultClient::new(&format!("https://{key_vault_name}.vault.azure.net"), Arc::new(azure_credentials)).unwrap().secret_client();
 
+                dbg!("MSGraph::new: 2");
 		// Get the secrets from the Azure Key Vault.
 		let client_id = match azure_key_vault_client.get(client_id_key).await {
 			Ok(client_id) => client_id.value,
