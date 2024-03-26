@@ -35,30 +35,30 @@ impl MSGraph {
 	/// tenant_id_key: The name of the secret that contains the tenant ID. (e.g. "ms-auth-tenant-id")
 	///
 	pub async fn new(key_vault_name: &str, client_id_key: &str, client_secret_key: &str, tenant_id_key: &str) -> Result<Self, String> {
-                dbg!("MSGraph::new(key_vault_name: {}, client_id_key: {}, client_secret_key: {}, tenant_id_key: {})", key_vault_name, client_id_key, client_secret_key, tenant_id_key);
+                //dbg!("MSGraph::new(key_vault_name: {}, client_id_key: {}, client_secret_key: {}, tenant_id_key: {})", key_vault_name, client_id_key, client_secret_key, tenant_id_key);
 		let azure_credentials = ImdsManagedIdentityCredential::default();
-                dbg!("MSGraph::new: 1");
+                //dbg!("MSGraph::new: 1");
 		let azure_key_vault_client = KeyvaultClient::new(&format!("https://{key_vault_name}.vault.azure.net"), Arc::new(azure_credentials)).unwrap().secret_client();
 
-                dbg!("MSGraph::new: 2");
+                //dbg!("MSGraph::new: 2");
 		// Get the secrets from the Azure Key Vault.
 		let client_id = match azure_key_vault_client.get(client_id_key).await {
 			Ok(client_id) => client_id.value,
 			Err(e) => return Err(e.to_string()),
 		};
-                dbg!("MSGraph::new: 3");
+                //dbg!("MSGraph::new: 3");
 		let client_secret = match azure_key_vault_client.get(client_secret_key).await {
 			Ok(client_secret) => client_secret.value,
 			Err(e) => return Err(e.to_string()),
 		};
 
-                dbg!("MSGraph::new: 4");
+                //dbg!("MSGraph::new: 4");
 		let tenant_id = match azure_key_vault_client.get(tenant_id_key).await {
 			Ok(tenant_id) => tenant_id.value,
 			Err(e) => return Err(e.to_string()),
 		};
 
-                dbg!("MSGraph::new: 5");
+                //dbg!("MSGraph::new: 5");
 		let client = reqwest::Client::new();
 		let scopes = ["https://graph.microsoft.com/.default".to_string()].join(" ").to_string();
 		let mut params = HashMap::new();
@@ -67,7 +67,7 @@ impl MSGraph {
 		params.insert("grant_type", "client_credentials");
 		params.insert("scope", &scopes);
 
-                dbg!("MSGraph::new: 6");
+                //dbg!("MSGraph::new: 6");
 		let res = client.post(format!("https://login.microsoftonline.com/{tenant_id}/oauth2/v2.0/token")).form(&params).send().await;
 		match res {
 			Ok(res) => {
