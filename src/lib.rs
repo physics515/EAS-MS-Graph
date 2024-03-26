@@ -24,7 +24,7 @@ mod site;
 mod team;
 
 pub struct MSGraph {
-	token: MSAccessToken,
+	pub token: MSAccessToken,
 }
 
 impl MSGraph {
