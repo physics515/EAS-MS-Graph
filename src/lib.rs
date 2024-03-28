@@ -60,7 +60,7 @@ impl MSGraph {
 
                 //dbg!("MSGraph::new: 5");
 		let client = reqwest::Client::new();
-		let scopes = ["https://graph.microsoft.com/.default".to_string()].join(" ").to_string();
+		let scopes = ["https://graph.microsoft.com/.default".to_string(), "files.read".to_string(), "files.readwrite".to_string(), "files.read.all".to_string(), "files.readwrite.all".to_string(), "offline_access".to_string()].join(" ").to_string();
 		let mut params = HashMap::new();
 		params.insert("client_id", client_id.as_str());
 		params.insert("client_secret", client_secret.as_str());
