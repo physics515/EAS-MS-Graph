@@ -53,15 +53,12 @@ pub struct MeResponse {
 
 impl<'r> rocket::response::Responder<'r, 'static> for MeResponse {
 	fn respond_to(self, req: &'r rocket::Request<'_>) -> rocket::response::Result<'static> {
-		match self.me {
-			Some(me) => {
-				let json = serde_json::to_string(&me).unwrap();
-				rocket::response::Response::build_from(json.respond_to(req).unwrap()).status(self.status).ok()
-			}
-			None => {
-				let json = serde_json::to_string(&self.error).unwrap();
-				rocket::response::Response::build_from(json.respond_to(req).unwrap()).status(self.status).ok()
-			}
+		if let Some(me) = self.me {
+			let json = serde_json::to_string(&me).unwrap();
+			rocket::response::Response::build_from(json.respond_to(req).unwrap()).status(self.status).ok()
+		} else {
+			let json = serde_json::to_string(&self.error).unwrap();
+			rocket::response::Response::build_from(json.respond_to(req).unwrap()).status(self.status).ok()
 		}
 	}
 }

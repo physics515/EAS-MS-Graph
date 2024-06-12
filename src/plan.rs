@@ -120,12 +120,13 @@ pub struct CreatePlanForm {
 }
 
 impl CreatePlanForm {
+	#[must_use]
 	pub fn to_create_plan(&self) -> CreatePlan {
 		CreatePlan {
 			plan_name: self.plan_name.clone(),
 			plan_template: match PlanTemplateType::from_str(&self.plan_template) {
 				Ok(t) => t,
-				Err(_) => PlanTemplateType::Default,
+				Err(()) => PlanTemplateType::Default,
 			},
 		}
 	}
@@ -137,7 +138,7 @@ pub struct CreatePlan {
 	pub plan_template: PlanTemplateType,
 }
 
-#[derive(Debug, Clone, Serialize, Deserialize, PartialEq)]
+#[derive(Debug, Clone, Serialize, Deserialize, PartialEq, Eq)]
 pub enum PlanTemplateType {
 	Default,
 	Project,
@@ -148,9 +149,8 @@ impl FromStr for PlanTemplateType {
 
 	fn from_str(s: &str) -> Result<Self, Self::Err> {
 		match s.to_lowercase().as_str() {
-			"default" => Ok(PlanTemplateType::Default),
-			"project" => Ok(PlanTemplateType::Project),
-			_ => Ok(PlanTemplateType::Default),
+			"project" => Ok(Self::Project),
+			_ => Ok(Self::Default),
 		}
 	}
 }
@@ -160,10 +160,11 @@ pub struct PlanTemplateSpec {
 }
 
 impl PlanTemplateType {
+	#[must_use]
 	pub fn to_spec(&self) -> PlanTemplateSpec {
 		match self {
-			PlanTemplateType::Default => PlanTemplateSpec { buckets: HashMap::new() },
-			PlanTemplateType::Project => {
+			Self::Default => PlanTemplateSpec { buckets: HashMap::new() },
+			Self::Project => {
 				let mut buckets = HashMap::new();
 				buckets.insert("Tech Work".to_owned(), Vec::new());
 				buckets.insert("Design Work".to_owned(), Vec::new());

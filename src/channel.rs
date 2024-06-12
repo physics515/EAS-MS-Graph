@@ -103,7 +103,7 @@ pub struct CreateSharedChannelResponse {
 }
 
 impl<'r> Responder<'r, 'static> for CreateSharedChannelResponse {
-	fn respond_to(self, _req: &'r rocket::Request<'_>) -> rocket::response::Result<'static> {
-		rocket::serde::json::Json(self).respond_to(_req)
+	fn respond_to(self, req: &'r rocket::Request<'_>) -> rocket::response::Result<'static> {
+		rocket::serde::json::Json(self).respond_to(req)
 	}
 }
