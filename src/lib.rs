@@ -1,4 +1,4 @@
-#![warn(clippy::pedantic, clippy::nursery, clippy::all, clippy::cargo)]
+#![warn(clippy::pedantic, clippy::nursery, clippy::all)]
 #![allow(clippy::multiple_crate_versions, clippy::module_name_repetitions)]
 
 use std::collections::HashMap;
@@ -165,32 +165,29 @@ impl MSGraph {
 					Err(err) => return Err(format!("Error adding owner to channel: {err}")),
 				}
 
-				match &data.plan {
-					Some(plan) => {
-						let plan = plan.to_create_plan();
-						let created_plan = self.automation_create_plan(plan.plan_name.clone(), team.display_name.clone().ok_or("Team display name not found")?.clone()).await;
-						let created_plan = match created_plan {
-							Ok(created_plan) => created_plan,
-							Err(err) => return Err(format!("Error creating plan: {err}")),
-						};
+				if let Some(plan) = &data.plan {
+					let plan = plan.to_create_plan();
+					let created_plan = self.automation_create_plan(plan.plan_name.clone(), team.display_name.clone().ok_or("Team display name not found")?.clone()).await;
+					let created_plan = match created_plan {
+						Ok(created_plan) => created_plan,
+						Err(err) => return Err(format!("Error creating plan: {err}")),
+					};
 
-						let spec = plan.plan_template.to_spec();
+					let spec = plan.plan_template.to_spec();
 
-						for (bucket_name, _) in spec.buckets {
-							let res = self.automation_add_bucket_to_plan(created_plan.title.clone().unwrap_or_else(|| plan.plan_name.clone()).clone(), team.display_name.clone().ok_or("Team display name not found")?.clone(), bucket_name.clone()).await;
-							match res {
-								Ok(_) => (),
-								Err(err) => return Err(format!("Error adding bucket to plan: {err}")),
-							}
-						}
-
-						let res = self.automation_add_plan_tab_to_teams_channel(&format!("{} Tasks", &channel.display_name.clone().ok_or("Channel display name not found")?), team.clone(), channel.clone(), created_plan).await;
+					for (bucket_name, _) in spec.buckets {
+						let res = self.automation_add_bucket_to_plan(created_plan.title.clone().unwrap_or_else(|| plan.plan_name.clone()).clone(), team.display_name.clone().ok_or("Team display name not found")?.clone(), bucket_name.clone()).await;
 						match res {
 							Ok(_) => (),
-							Err(err) => return Err(format!("Error adding plan tab to channel: {err}")),
+							Err(err) => return Err(format!("Error adding bucket to plan: {err}")),
 						}
 					}
-					None => (),
+
+					let res = self.automation_add_plan_tab_to_teams_channel(&format!("{} Tasks", &channel.display_name.clone().ok_or("Channel display name not found")?), team.clone(), channel.clone(), created_plan).await;
+					match res {
+						Ok(_) => (),
+						Err(err) => return Err(format!("Error adding plan tab to channel: {err}")),
+					}
 				}
 				Ok((team, channel, general))
 			}
